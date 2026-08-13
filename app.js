@@ -1,7 +1,4 @@
-/* =========================================
-   PUBU — Maker Challenge Generator
-   Global Durum
-========================================= */
+
 let database = [];      // Bileşen havuzu (her biri: name, category, level)
 let mcuList = [];
 let difficulties = [];  // Her biri: id, desc, level
