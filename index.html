@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pubu — Maker Challenge Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Sağ Üst Favoriler Butonu -->
+<button id="viewFavsBtn" class="top-right-btn">⭐ Favorilerim</button>
+
+<div class="container">
+    <header class="fade-in">
+        <h1>⚡ pubu</h1>
+        <p class="desc">Bileşenlerini seç, zorluğunu belirle ve sınırları zorlayan projeni kurgula!</p>
+    </header>
+
+    <div class="controls fade-in delay-1">
+        <div class="control-group">
+            <label for="mcuSelect">Mikrodenetleyici / Kart</label>
+            <select id="mcuSelect"></select>
+        </div>
+
+        <div class="control-group">
+            <label for="compCount">Bileşen Sayısı</label>
+            <div class="range-wrapper">
+                <input type="range" id="compCount" min="1" max="8" value="3">
+                <span class="range-value" id="compCountVal">3</span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="diffSelect">Zorluk Seviyesi</label>
+            <select id="diffSelect"></select>
+            <p class="pool-info" id="poolInfo">Havuz bilgisi yükleniyor...</p>
+        </div>
+    </div>
+
+    <button class="btn-generate pulse" id="generateBtn">🚀 Yeni Meydan Okuma Üret</button>
+
+    <div class="result-card hidden" id="resultArea">
+        <div class="badge-row">
+            <span class="badge" id="diffBadge">Bekleniyor...</span>
+            <span id="challengeTimestamp" class="timestamp">Hazır mısın?</span>
+        </div>
+
+        <div class="section-title">SEÇİLEN ANA BEYİN</div>
+        <div class="mcu-box">
+            <span class="mcu-icon">🧠</span>
+            <span class="mcu-name" id="selectedMCU">...</span>
+        </div>
+
+        <div class="section-title">KULLANILACAK ZORUNLU BİLEŞENLER</div>
+        <div class="components-grid" id="componentsList"></div>
+
+        <div class="challenge-prompt" id="promptText">
+            Proje konsepti yükleniyor...
+        </div>
+
+        <div class="actions">
+            <button class="btn-fav" id="addFavBtn">⭐ Favorilere Ekle</button>
+            <button class="btn-copy" id="copyBtn">📋 Kopyala</button>
+        </div>
+    </div>
+</div>
+
+<!-- Favoriler Modalı -->
+<div class="modal-overlay hidden" id="favModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>⭐ Kaydedilen Projeler</h2>
+            <button id="closeFavsBtn" class="close-btn">✖</button>
+        </div>
+        <div class="fav-list" id="favList">
+            <!-- Kayıtlı favoriler JS ile buraya eklenecek -->
+        </div>
+    </div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
