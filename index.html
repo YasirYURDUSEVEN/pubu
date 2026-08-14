@@ -4,9 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>pubu — Maker Challenge Generator</title>
+    <!-- Modern fontlar -->
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- EmailJS Kütüphanesi -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            // EmailJS başlatılıyor. Buradaki key sadece istemci tarafı içindir.
+            emailjs.init("HxKvrbu4qXFE72sOW"); 
+        })();
+    </script>
 </head>
+
 <body>
 
 <!-- Sağ Üst Favoriler Butonu -->
@@ -19,13 +30,22 @@
     </header>
 
     <div class="controls fade-in delay-1">
+        <!-- Envanter Seçim Alanı -->
+        <div class="inventory-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label class="section-title" style="margin: 0;">📦 ELİMDEKİ PARÇALAR (ENVANTER)</label>
+                <button id="toggleInventoryBtn" class="btn-text">Tümünü Kaldır</button>
+            </div>
+            <div class="inventory-grid" id="inventoryGrid"></div>
+        </div>
+
         <div class="control-group">
             <label for="mcuSelect">Mikrodenetleyici / Kart</label>
             <select id="mcuSelect"></select>
         </div>
 
         <div class="control-group">
-            <label for="compCount">Bileşen Sayısı</label>
+            <label for="compCount">Kullanılacak Bileşen Sayısı</label>
             <div class="range-wrapper">
                 <input type="range" id="compCount" min="1" max="8" value="3">
                 <span class="range-value" id="compCountVal">3</span>
@@ -53,19 +73,67 @@
             <span class="mcu-name" id="selectedMCU">...</span>
         </div>
 
-        <div class="section-title">KULLANILACAK ZORUNLU BİLEŞENLER</div>
+        <div class="section-title">KULLANILACAK ZORUNLU BİLEŞENLER (ENVANTERİNDEN)</div>
         <div class="components-grid" id="componentsList"></div>
+
+        <div id="extraPartsContainer" class="hidden">
+            <div class="section-title" style="color: var(--accent-cyan);">💡 ÖNERİLEN EKSTRA PARÇALAR (PROJEYİ UÇURMAK İÇİN)</div>
+            <div class="components-grid" id="extraComponentsList"></div>
+        </div>
 
         <div class="challenge-prompt" id="promptText">
             Proje konsepti yükleniyor...
         </div>
+        
+        <!-- Zamanlayıcı -->
+        <div class="timer-section mt-4">
+            <div class="section-title">⏱️ MEYDAN OKUMA SÜRESİ</div>
+            <div class="timer-display" id="timerDisplay">
+                <div class="flip-unit" id="minutesUnit">30</div>
+                <span class="colon">:</span>
+                <div class="flip-unit" id="secondsUnit">00</div>
+            </div>
+            <div class="timer-controls">
+                <input type="number" id="timerInput" value="30" min="1" max="120" class="timer-input" title="Dakika">
+                <button class="btn-timer" id="startTimerBtn">▶ Başlat</button>
+                <button class="btn-timer" id="pauseTimerBtn">⏸ Durdur</button>
+                <button class="btn-timer" id="resetTimerBtn">🔄 Sıfırla</button>
+            </div>
+        </div>
 
-        <div class="actions">
+        <div class="actions mt-4">
             <button class="btn-fav" id="addFavBtn">⭐ Favorilere Ekle</button>
             <button class="btn-copy" id="copyBtn">📋 Kopyala</button>
         </div>
     </div>
+
+    <!-- YENİLENMİŞ: İletişim Formu ve Honeypot Alanı -->
+    <div class="feedback-section fade-in delay-2 mt-4">
+        <div class="section-title" style="margin-bottom: 12px;">✉️ FİKİRLERİNİ BENİMLE PAYLAŞ</div>
+        <form id="pubu-contact-form" class="feedback-form">
+            
+            <!-- HONEYPOT ALANI: İnsanlar görmez, botlar doldurur. Bot doldurursa form gitmez. -->
+            <div class="honeypot-group" aria-hidden="true">
+                <label for="pubu-bot-trap">Lütfen bu alanı boş bırakın</label>
+                <input type="text" name="pubu-bot-trap" id="pubu-bot-trap" tabindex="-1" autocomplete="off">
+            </div>
+
+            <input type="text" name="name" placeholder="Adın" required>
+            <input type="email" name="email" placeholder="E-posta Adresin" required>
+            <input type="text" name="title" placeholder="Mesaj Konusu" required>
+            <textarea name="message" placeholder="Aklına gelen proje fikirlerini veya site için önerilerini yaz..." rows="3" required></textarea>
+            
+            <!-- Buton tasarımını js kontrol edecek -->
+            <button type="submit" class="btn-submit" id="submitBtn">Gönder 🚀</button>
+        </form>
+        <p id="formStatus" class="form-status hidden"></p>
+    </div>
 </div>
+
+<!-- EMEĞE SAYGI: Profesyonel Footer Alanı -->
+<footer class="site-footer">
+    <p>&copy; 2026 Pubu | Geliştirici: <a href="https://www.instagram.com/yasiryrdseven?igsh=amR5dTZ6ajFyNnhs&igsi=amR5dTZ6ajFyNnhs" target="_blank">A. Yasir Yurduseven</a></p>
+</footer>
 
 <!-- Favoriler Modalı -->
 <div class="modal-overlay hidden" id="favModal">
@@ -74,9 +142,7 @@
             <h2>⭐ Kaydedilen Projeler</h2>
             <button id="closeFavsBtn" class="close-btn">✖</button>
         </div>
-        <div class="fav-list" id="favList">
-            <!-- Kayıtlı favoriler JS ile buraya eklenecek -->
-        </div>
+        <div class="fav-list" id="favList"></div>
     </div>
 </div>
 
