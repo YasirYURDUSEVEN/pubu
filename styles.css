@@ -288,3 +288,41 @@ select:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(88, 
 .custom-part-form input:focus { 
     border-color: var(--accent-blue); box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.15); 
 }
+/* RGB Dalga Animasyonu */
+@keyframes rgbWave {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Topluluk Butonu ve RGB Akış Efekti */
+.btn-community {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    color: #fff;
+    
+    background: linear-gradient(270deg, #833ab4, #fd1d1d, #fcb045, #ff4e50, #f9d423);
+    background-size: 300% 300%;
+    animation: rgbWave 6s ease infinite;
+    
+    transition: transform 1s, box-shadow 1s;
+    box-shadow: 0 4px 15px rgba(253, 29, 29, 0.2);
+}
+
+.btn-community:hover {
+    transform: translateY(-2px);
+    animation: rgbWave 6s ease infinite; /* Üzerine gelince dalgalanma hızı artar */
+    box-shadow: 0 6px 25px rgba(253, 29, 29, 0.4);
+}
