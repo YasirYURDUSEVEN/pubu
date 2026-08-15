@@ -1,6 +1,6 @@
 <div align="center">
   <img src="pubu.svg" alt="PUBU Logo" width="80" height="80">
-  <h1>⚡ pubu</h1>
+  <h1>pubu</h1>
   <p><strong>Maker Challenge Generator</strong></p>
   <p><em>Bileşenlerini seç, zorluğunu belirle ve sınırları zorlayan projeni kurgula!</em></p>
 </div>
