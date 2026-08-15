@@ -16,6 +16,8 @@
             emailjs.init("HxKvrbu4qXFE72sOW"); 
         })();
     </script>
+    <!-- Favicon (Sekme İkonu) -->
+    <link rel="icon" type="image/svg+xml" href="pubu.svg">
 </head>
 
 <body>
@@ -25,7 +27,12 @@
 
 <div class="container">
     <header class="fade-in">
-        <h1>⚡ pubu</h1>
+        <!-- YENİLENEN LOGO VE BAŞLIK ALANI -->
+        <div class="hero-title" style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 12px;">
+            <img src="pubu.svg" alt="PUBU Logo" style="width: 55px; height: 55px; filter: drop-shadow(0 0 12px rgba(255, 140, 0, 0.4));">
+            <h1 style="color: #FF8C00; margin: -5; font-size: clamp(3rem, 6vw, 4rem); letter-spacing: -1.5px; line-height: 1;">pubu</h1>
+        </div>
+        <p class="desc" style="color: #ff8c00da;">Maker Challenge Generator</p>
         <p class="desc">Bileşenlerini seç, zorluğunu belirle ve sınırları zorlayan projeni kurgula!</p>
     </header>
 
@@ -37,6 +44,23 @@
                 <button id="toggleInventoryBtn" class="btn-text">Tümünü Kaldır</button>
             </div>
             <div class="inventory-grid" id="inventoryGrid"></div>
+            <!-- Özel Parça Ekleme Alanı -->
+            <div class="custom-part-section" style="background: rgba(255, 255, 255, 0.02); padding: 16px; border-radius: 12px; border: 1px solid var(--surface-border); margin-bottom: 20px;">
+                <div class="section-title" style="margin: 0 0 12px 0;">➕ KENDİ PARÇANI EKLE</div>
+                <div class="custom-part-form" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <input type="text" id="customPartName" placeholder="Parça Adı (Örn: Lazer Sensör)" style="flex: 2; min-width: 150px;">
+                    <select id="customPartLevel" style="flex: 1; min-width: 100px; padding: 12px 16px;">
+                        <option value="1">Seviye 1</option>
+                        <option value="2">Seviye 2</option>
+                        <option value="3">Seviye 3</option>
+                        <option value="4">Seviye 4</option>
+                        <option value="5">Seviye 5</option>
+                        <option value="6">Seviye 6</option>
+                    </select>
+                    <button id="addCustomPartBtn" class="btn-submit" style="flex: 1; padding: 12px; min-width: 120px; font-size: 0.9rem; justify-content:center;">Ekle</button>
+                </div>
+            </div>
+            <!-- Özel Parça Alanı Sonu -->
         </div>
 
         <div class="control-group">
@@ -107,12 +131,12 @@
         </div>
     </div>
 
-    <!-- YENİLENMİŞ: İletişim Formu ve Honeypot Alanı -->
+    <!-- İletişim Formu ve Honeypot Alanı -->
     <div class="feedback-section fade-in delay-2 mt-4">
-        <div class="section-title" style="margin-bottom: 12px;">✉️ FİKİRLERİNİ BENİMLE PAYLAŞ</div>
+        <div class="section-title" style="margin-bottom: 12px;">✉️ FİKİRLERİNİ TOPLULUKLA PAYLAŞ</div>
         <form id="pubu-contact-form" class="feedback-form">
             
-            <!-- HONEYPOT ALANI: İnsanlar görmez, botlar doldurur. Bot doldurursa form gitmez. -->
+            <!-- HONEYPOT ALANI -->
             <div class="honeypot-group" aria-hidden="true">
                 <label for="pubu-bot-trap">Lütfen bu alanı boş bırakın</label>
                 <input type="text" name="pubu-bot-trap" id="pubu-bot-trap" tabindex="-1" autocomplete="off">
@@ -123,14 +147,13 @@
             <input type="text" name="title" placeholder="Mesaj Konusu" required>
             <textarea name="message" placeholder="Aklına gelen proje fikirlerini veya site için önerilerini yaz..." rows="3" required></textarea>
             
-            <!-- Buton tasarımını js kontrol edecek -->
             <button type="submit" class="btn-submit" id="submitBtn">Gönder 🚀</button>
         </form>
         <p id="formStatus" class="form-status hidden"></p>
     </div>
 </div>
 
-<!-- EMEĞE SAYGI: Profesyonel Footer Alanı -->
+<!-- Footer Alanı -->
 <footer class="site-footer">
     <p>&copy; 2026 Pubu | Geliştirici: <a href="https://www.instagram.com/yasiryrdseven?igsh=amR5dTZ6ajFyNnhs&igsi=amR5dTZ6ajFyNnhs" target="_blank">A. Yasir Yurduseven</a></p>
 </footer>

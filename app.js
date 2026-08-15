@@ -1,14 +1,13 @@
 /* =========================================
    PUBU — Maker Challenge Generator
    Global Durum ve Değişkenler
-   (Uygulamanın hafızasını burada tutuyoruz)
 ========================================= */
-let database = [];      // JSON'dan gelen tüm parçalar
-let mcuList = [];       // İşlemci listesi (Arduino vb.)
-let difficulties = [];  // Zorluk seviyeleri
-let currentChallenge = null; // Şu an üretilen görevi tutar (Kopyalama/Kaydetme için)
+let database = [];      
+let mcuList = [];       
+let difficulties = [];  
+let currentChallenge = null; 
 
-// DOM Elementleri (HTML'deki elemanları JS'ye bağlıyoruz)
+// DOM Elementleri
 const mcuSelect = document.getElementById('mcuSelect');
 const diffSelect = document.getElementById('diffSelect');
 const compSlider = document.getElementById('compCount');
@@ -28,29 +27,33 @@ const favList = document.getElementById('favList');
 
 /* =========================================
    VERİ YÜKLEME VE ENVANTER OLUŞTURMA
-   (Sayfa açıldığında JSON'u okur ve arayüzü çizer)
 ========================================= */
+// Local storage'daki özel parçaları çeken fonksiyon
+function getCustomComponents() {
+    return JSON.parse(localStorage.getItem('pubu_custom_components')) || [];
+}
+
 async function loadData() {
     try {
-        // Yükleme başladığında butonu kilitliyoruz
         generateBtn.textContent = 'Veriler Yükleniyor... ⏳';
         generateBtn.disabled = true;
 
-        // JSON dosyasını çek
         const response = await fetch('data.json');
         if (!response.ok) throw new Error(`HTTP hatası! Durum: ${response.status}`);
 
         const data = await response.json();
-        database = data.database;
+        
+        // YENİ: JSON'dan gelen veriler ile Kullanıcının özel parçalarını birleştiriyoruz
+        const customParts = getCustomComponents();
+        database = [...data.database, ...customParts]; 
+        
         mcuList = data.mcuList;
         difficulties = data.difficulties;
 
-        // Arayüzü gelen verilerle doldur
         initSelects();
         buildInventoryUI(); 
         updatePoolInfo();
 
-        // Her şey hazır, butonu aktif et
         generateBtn.textContent = '🚀 Yeni Meydan Okuma Üret';
         generateBtn.disabled = false;
     } catch (error) {
@@ -59,7 +62,6 @@ async function loadData() {
     }
 }
 
-// Dropdown (Select) menülerini doldurur
 function initSelects() {
     mcuSelect.innerHTML = `<option value="random">🎲 Rastgele Yapay Zeka Seçsin</option>`;
     mcuList.forEach(mcu => mcuSelect.innerHTML += `<option value="${mcu}">${mcu}</option>`);
@@ -70,20 +72,19 @@ function initSelects() {
     });
 }
 
-// Envanterdeki checkbox'ları çizer
 function buildInventoryUI() {
     const grid = document.getElementById('inventoryGrid');
     grid.innerHTML = '';
     database.forEach(comp => {
         const lbl = document.createElement('label');
         lbl.className = 'checkbox-label';
-        // Varsayılan olarak tüm parçalar "seçili" gelir
-        lbl.innerHTML = `<input type="checkbox" class="inv-checkbox" value="${comp.name}" checked> ${comp.name}`;
+        // Yeni eklenen özel parçaları belli etmek için yanlarına ufak bir yıldız/etiket koyabiliriz
+        const isCustom = comp.category === "Özel Parça" ? " 🛠️" : "";
+        lbl.innerHTML = `<input type="checkbox" class="inv-checkbox" value="${comp.name}" checked> ${comp.name}${isCustom}`;
         grid.appendChild(lbl);
     });
 }
 
-// Tümünü Seç / Tümünü Kaldır Butonu İşlevi
 document.getElementById('toggleInventoryBtn').addEventListener('click', (e) => {
     const checkboxes = document.querySelectorAll('.inv-checkbox');
     const allChecked = Array.from(checkboxes).every(cb => cb.checked);
@@ -91,21 +92,17 @@ document.getElementById('toggleInventoryBtn').addEventListener('click', (e) => {
     e.target.textContent = allChecked ? 'Tümünü Seç' : 'Tümünü Kaldır';
 });
 
-// Yardımcı Fonksiyon: Diziden rastgele eleman seçer
 const getRandomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-// Belirli bir seviyeye kadar olan parçaları filtreler
 function getPoolForLevel(level) {
     return database.filter(c => c.level <= level);
 }
 
-// Seçilen zorluğu tespit eder (Eğer rastgele seçildiyse random birini atar)
 function resolveSelectedDifficulty() {
     if (diffSelect.value === 'random') return getRandomItem(difficulties);
     return difficulties.find(d => d.id === diffSelect.value);
 }
 
-// Havuzda kaç parça kaldığını gösteren bilgi metnini günceller
 function updatePoolInfo() {
     if (!poolInfo || difficulties.length === 0) return;
     let diffForPreview = (diffSelect.value === 'random') ? difficulties[difficulties.length - 1] : difficulties.find(d => d.id === diffSelect.value);
@@ -114,11 +111,9 @@ function updatePoolInfo() {
     poolInfo.textContent = `🔓 "${diffForPreview.id}" seviyesi için havuzda ${pool.length} bileşen eşleşiyor.`;
 }
 
-// Arayüz değişikliklerini dinleyen event listener'lar
 diffSelect.addEventListener('change', updatePoolInfo);
 compSlider.addEventListener('input', (e) => compVal.textContent = e.target.value);
 
-// Proje üretirkenki "Suni" bekleme ve kelime değiştirme efekti
 function simulateLoading(callback) {
     resultArea.classList.remove('hidden');
     addFavBtn.classList.remove('saved');
@@ -130,61 +125,109 @@ function simulateLoading(callback) {
     
     let iterations = 0;
     const interval = setInterval(() => {
-        // Hızlıca rastgele MCU isimleri göstererek havalı bir efekt yaratır
         if (mcuList.length > 0) document.getElementById('selectedMCU').textContent = getRandomItem(mcuList);
         document.getElementById('diffBadge').textContent = 'Analiz ediliyor...';
 
         iterations++;
-        if (iterations > 15) { // 15 kere döndükten sonra bitir
+        if (iterations > 15) { 
             clearInterval(interval);
-            callback(); // Asıl üretme fonksiyonunu çağır
+            callback(); 
         }
     }, 50);
 }
 
 /* =========================================
-   GÖREV ÜRETİMİ (Algoritma Merkezi)
+   ÖZEL PARÇA EKLEME SİSTEMİ (YENİ EKLENDİ)
+========================================= */
+document.getElementById('addCustomPartBtn').addEventListener('click', () => {
+    const nameInput = document.getElementById('customPartName');
+    const levelInput = document.getElementById('customPartLevel');
+    
+    const partName = nameInput.value.trim();
+    const partLevel = parseInt(levelInput.value, 10);
+
+    if (!partName) {
+        alert("Lütfen geçerli bir parça adı girin.");
+        return;
+    }
+
+    // Aynı isimde parça olup olmadığını kontrol et (büyük/küçük harf duyarsız)
+    if (database.some(comp => comp.name.toLowerCase() === partName.toLowerCase())) {
+        alert("Bu parça zaten envanterinizde mevcut!");
+        return;
+    }
+
+    const newComponent = { name: partName, category: "Özel Parça", level: partLevel };
+
+    // 1. Local Storage'a kaydet
+    const customParts = getCustomComponents();
+    customParts.push(newComponent);
+    localStorage.setItem('pubu_custom_components', JSON.stringify(customParts));
+
+    // 2. Anlık veritabanına ekle
+    database.push(newComponent);
+
+    // 3. Arayüzü güncelle
+    buildInventoryUI();
+    updatePoolInfo();
+
+    // 4. Görsel geri bildirim ve input temizleme
+    nameInput.value = '';
+    const btn = document.getElementById('addCustomPartBtn');
+    const originalText = btn.innerHTML;
+    const originalBg = btn.style.background;
+    
+    btn.innerHTML = '✅ Eklendi!';
+    btn.style.background = 'var(--accent-cyan)';
+    btn.style.color = '#0d1117'; // Yazı rengini okunabilir yap
+    
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.style.background = originalBg;
+        btn.style.color = '';
+    }, 1500);
+});
+
+/* =========================================
+   GÖREV ÜRETİMİ (BUG FİX UYGULANDI)
 ========================================= */
 function generateChallenge() {
     if (database.length === 0) return;
 
-    // Zorluk ve işlemciyi belirle
     const finalMCU = (mcuSelect.value === 'random') ? getRandomItem(mcuList) : mcuSelect.value;
     const finalDiffObj = resolveSelectedDifficulty();
     const levelPool = getPoolForLevel(finalDiffObj.level);
 
-    // Kullanıcının envanterde işaretlediği (sahip olduğu) parçalar
     const checkedNames = Array.from(document.querySelectorAll('.inv-checkbox:checked')).map(cb => cb.value);
     
-    // İşaretli olanlar (Zorunlu) ve Olmayanlar (Ekstra Öneri) olarak ayır
+    // Kullanıcının sahip olduğu/işaretlediği ve seviyeye uygun parçalar
     const ownedPool = levelPool.filter(c => checkedNames.includes(c.name));
-    const unownedPool = levelPool.filter(c => !checkedNames.includes(c.name));
 
     const requestedCount = parseInt(compSlider.value, 10);
     const count = Math.min(requestedCount, ownedPool.length); 
 
-    // Eğer elinde parça yoksa uyar
     if (count === 0) {
         document.getElementById('selectedMCU').textContent = finalMCU;
         document.getElementById('promptText').innerHTML = `<span style="color:var(--accent-red)">⚠️ Envanterinde bu zorluk seviyesiyle eşleşen işaretli parça yok.</span>`;
         return;
     }
 
-    // Sahip olunanlardan rastgele seç
+    // Ana görev için işaretli parçalar arasından seçim yap
     const shuffledOwned = [...ownedPool].sort(() => 0.5 - Math.random());
     const selectedComps = shuffledOwned.slice(0, count);
 
-    // Sahip olunmayanlardan rastgele 2 tane ekstra öner
-    const extraCount = Math.min(2, unownedPool.length);
-    const extraComps = [...unownedPool].sort(() => 0.5 - Math.random()).slice(0, extraCount);
+    // DÜZELTİLDİ: Ekstra parça seçiminde envanterdeki "işaretleme" durumuna bakmaksızın, 
+    // seçilen parçalar (selectedComps) haricindeki tüm level havuzundan (levelPool) seçim yapar.
+    const remainingPoolForExtra = levelPool.filter(c => !selectedComps.some(sc => sc.name === c.name));
+    
+    const extraCount = Math.min(2, remainingPoolForExtra.length);
+    const extraComps = [...remainingPoolForExtra].sort(() => 0.5 - Math.random()).slice(0, extraCount);
 
-    // Arayüzü güncelle
     document.getElementById('selectedMCU').textContent = finalMCU;
     const badge = document.getElementById('diffBadge');
     badge.textContent = `Zorluk: ${finalDiffObj.id} (Seviye ${finalDiffObj.level})`;
     badge.className = `badge difficulty-${finalDiffObj.id.toLowerCase()}`;
 
-    // Seçilen bileşenleri listeye ekle
     componentsList.innerHTML = '';
     selectedComps.forEach((comp, index) => {
         const card = document.createElement('div');
@@ -194,7 +237,6 @@ function generateChallenge() {
         componentsList.appendChild(card);
     });
 
-    // Ekstra (önerilen) bileşenleri listeye ekle
     const extraContainer = document.getElementById('extraPartsContainer');
     const extraList = document.getElementById('extraComponentsList');
     extraList.innerHTML = '';
@@ -211,13 +253,11 @@ function generateChallenge() {
         extraContainer.classList.remove('hidden');
     }
 
-    // Yapay zeka prompt metnini oluştur
     const compNames = selectedComps.map(c => c.name).join(', ');
     document.getElementById('promptText').innerHTML = `
         🎯 <strong>Görevin:</strong> <strong>${finalMCU}</strong> mimarisini ve <strong>${compNames}</strong> donanımlarını entegre ederek, <strong>${finalDiffObj.id} seviyesine uygun</strong> bir sistem tasarla.
     `;
 
-    // Mevcut görevi objeye kaydet (Favorilere eklerken kullanacağız)
     currentChallenge = {
         id: Date.now().toString(),
         mcu: finalMCU,
@@ -230,7 +270,6 @@ function generateChallenge() {
     resetTimer(); 
 }
 
-// Ana Üret butonuna tıklandığında
 generateBtn.addEventListener('click', () => {
     generateBtn.disabled = true;
     generateBtn.style.opacity = '0.7';
@@ -241,7 +280,6 @@ generateBtn.addEventListener('click', () => {
     });
 });
 
-// Görevi Kopyalama Butonu
 copyBtn.addEventListener('click', () => {
     if (!currentChallenge) return;
     const comps = currentChallenge.components.map(c => `- ${c}`).join('\n');
@@ -265,7 +303,6 @@ const timerInput = document.getElementById('timerInput');
 const minutesUnit = document.getElementById('minutesUnit');
 const secondsUnit = document.getElementById('secondsUnit');
 
-// Timer'ın ekrandaki yazılarını günceller (Flip-Flop stili)
 function updateTimerUI() {
     const minutes = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
     const seconds = (timeRemaining % 60).toString().padStart(2, '0');
@@ -273,7 +310,6 @@ function updateTimerUI() {
     secondsUnit.textContent = seconds;
 }
 
-// Kullanıcı dakika inputunu değiştirdiğinde süreyi ayarla
 timerInput.addEventListener('input', () => {
     if (!isTimerRunning) {
         let inputVal = parseInt(timerInput.value, 10);
@@ -283,7 +319,6 @@ timerInput.addEventListener('input', () => {
     }
 });
 
-// Zamanlayıcı Başlat
 document.getElementById('startTimerBtn').addEventListener('click', () => {
     if (isTimerRunning) return;
     
@@ -306,13 +341,11 @@ document.getElementById('startTimerBtn').addEventListener('click', () => {
     }, 1000);
 });
 
-// Zamanlayıcı Durdur
 document.getElementById('pauseTimerBtn').addEventListener('click', () => {
     clearInterval(timerInterval);
     isTimerRunning = false;
 });
 
-// Zamanlayıcı Sıfırla
 function resetTimer() {
     clearInterval(timerInterval);
     isTimerRunning = false;
@@ -326,45 +359,34 @@ document.getElementById('resetTimerBtn').addEventListener('click', resetTimer);
    EMAILJS & GÜVENLİK (HONEYPOT) & ANİMASYON
 ========================================= */
 document.getElementById('pubu-contact-form').addEventListener('submit', function(e) {
-    e.preventDefault(); // Sayfanın yenilenmesini engelle
+    e.preventDefault(); 
     
-    // DOM'daki elementleri al
     const submitBtn = document.getElementById('submitBtn');
     const statusMsg = document.getElementById('formStatus');
-    const honeypot = document.getElementById('pubu-bot-trap').value; // Bot tuzağındaki değeri oku
+    const honeypot = document.getElementById('pubu-bot-trap').value; 
 
-    // 1. HONEYPOT KONTROLÜ (GÜVENLİK)
-    // Gerçek bir insan bu alanı görmez, dolayısıyla değeri hep "" (boşluk) olur.
-    // Eğer bot burayı doldurduysa işlem iptal edilir.
     if (honeypot !== "") {
         console.warn("Honeypot tetiklendi: Bot aktivitesi engellendi.");
-        // Bota "başarılı" olmuş gibi davranıp onu kandırıyoruz ki zorlamaya devam etmesin.
         this.reset();
         return; 
     }
 
-    // 2. YÜKLENİYOR DURUMU (UX/ANİMASYON)
-    // Buton gri olur ve tıklanamaz hale gelir.
     const originalBtnText = submitBtn.innerHTML;
     submitBtn.innerHTML = 'Gönderiliyor... ⏳';
     submitBtn.classList.add('btn-loading');
     submitBtn.disabled = true;
 
-    // Durum mesajını temizle
     statusMsg.classList.remove('hidden', 'text-success', 'text-error');
     statusMsg.textContent = "";
 
-    // 3. MAİL GÖNDERİMİ (EMAILJS)
     emailjs.sendForm('service_esvi3kl', 'template_3krb2et', this)
         .then(() => {
-            // BAŞARI DURUMU
             submitBtn.classList.remove('btn-loading');
-            submitBtn.classList.add('btn-success'); // Buton yeşil olur
+            submitBtn.classList.add('btn-success'); 
             submitBtn.innerHTML = '✅ İletildi!';
             
-            this.reset(); // Formun içini temizle
+            this.reset(); 
 
-            // 3 Saniye sonra butonu eski haline getir
             setTimeout(() => {
                 submitBtn.classList.remove('btn-success');
                 submitBtn.innerHTML = originalBtnText;
@@ -372,9 +394,8 @@ document.getElementById('pubu-contact-form').addEventListener('submit', function
             }, 3000);
 
         }, (error) => {
-            // HATA DURUMU
             submitBtn.classList.remove('btn-loading');
-            submitBtn.innerHTML = originalBtnText; // Butonu eski haline çevir
+            submitBtn.innerHTML = originalBtnText; 
             submitBtn.disabled = false;
 
             statusMsg.textContent = "❌ Gönderim hatası oluştu. Lütfen tekrar dene.";
@@ -386,52 +407,43 @@ document.getElementById('pubu-contact-form').addEventListener('submit', function
 /* =========================================
    FAVORİLER (LOCAL STORAGE) İŞLEMLERİ
 ========================================= */
-// Tarayıcı hafızasındaki favorileri çeker
 function getFavorites() {
     return JSON.parse(localStorage.getItem('pubu_favorites')) || [];
 }
 
-// Ekranda üretilen güncel görevi favorilere kaydeder
 addFavBtn.addEventListener('click', () => {
     if (!currentChallenge) return;
     const favs = getFavorites();
     favs.push(currentChallenge);
     localStorage.setItem('pubu_favorites', JSON.stringify(favs));
     
-    // Butonu pasif/yeşil hale getir
     addFavBtn.innerHTML = '✅ Kaydedildi';
     addFavBtn.classList.add('saved');
 });
 
-// Modalı (Popup) Aç
 viewFavsBtn.addEventListener('click', () => {
-    renderFavorites(); // Listeyi güncelle
-    favModal.classList.remove('hidden'); // Modalı göster
+    renderFavorites(); 
+    favModal.classList.remove('hidden'); 
 });
 
-// Modalı Kapat
 closeFavsBtn.addEventListener('click', () => favModal.classList.add('hidden'));
 
-// Favori Silme (HTML içinden onclick ile çağırıldığı için window objesine bağlandı)
 window.deleteFav = function (id) {
     let favs = getFavorites();
-    favs = favs.filter(f => f.id !== id); // Tıklanan ID dışındakileri tut
+    favs = favs.filter(f => f.id !== id); 
     localStorage.setItem('pubu_favorites', JSON.stringify(favs));
-    renderFavorites(); // Listeyi tekrar çiz
+    renderFavorites(); 
 };
 
-// Favorileri ekrana basma fonksiyonu
 function renderFavorites() {
     const favs = getFavorites();
     favList.innerHTML = '';
     
-    // Eğer favori yoksa boş mesajı göster
     if (favs.length === 0) {
         favList.innerHTML = '<p class="empty-msg">Henüz kaydedilmiş bir projen yok.</p>';
         return;
     }
 
-    // Listeyi tersten (en yeni en üstte) yazdırır
     favs.slice().reverse().forEach(fav => {
         const card = document.createElement('div');
         card.className = 'fav-card';
