@@ -28,7 +28,6 @@ const favList = document.getElementById('favList');
 /* =========================================
    VERİ YÜKLEME VE ENVANTER OLUŞTURMA
 ========================================= */
-// Local storage'daki özel parçaları çeken fonksiyon
 function getCustomComponents() {
     return JSON.parse(localStorage.getItem('pubu_custom_components')) || [];
 }
@@ -43,7 +42,6 @@ async function loadData() {
 
         const data = await response.json();
         
-        // YENİ: JSON'dan gelen veriler ile Kullanıcının özel parçalarını birleştiriyoruz
         const customParts = getCustomComponents();
         database = [...data.database, ...customParts]; 
         
@@ -78,7 +76,6 @@ function buildInventoryUI() {
     database.forEach(comp => {
         const lbl = document.createElement('label');
         lbl.className = 'checkbox-label';
-        // Yeni eklenen özel parçaları belli etmek için yanlarına ufak bir yıldız/etiket koyabiliriz
         const isCustom = comp.category === "Özel Parça" ? " 🛠️" : "";
         lbl.innerHTML = `<input type="checkbox" class="inv-checkbox" value="${comp.name}" checked> ${comp.name}${isCustom}`;
         grid.appendChild(lbl);
@@ -112,7 +109,11 @@ function updatePoolInfo() {
 }
 
 diffSelect.addEventListener('change', updatePoolInfo);
-compSlider.addEventListener('input', (e) => compVal.textContent = e.target.value);
+compSlider.addEventListener('input', (e) => {
+    compVal.textContent = e.target.value;
+    compSlider.style.setProperty('--val', e.target.value);
+});
+compSlider.style.setProperty('--val', compSlider.value);
 
 function simulateLoading(callback) {
     resultArea.classList.remove('hidden');
@@ -137,7 +138,7 @@ function simulateLoading(callback) {
 }
 
 /* =========================================
-   ÖZEL PARÇA EKLEME SİSTEMİ (YENİ EKLENDİ)
+   ÖZEL PARÇA EKLEME SİSTEMİ
 ========================================= */
 document.getElementById('addCustomPartBtn').addEventListener('click', () => {
     const nameInput = document.getElementById('customPartName');
@@ -151,7 +152,6 @@ document.getElementById('addCustomPartBtn').addEventListener('click', () => {
         return;
     }
 
-    // Aynı isimde parça olup olmadığını kontrol et (büyük/küçük harf duyarsız)
     if (database.some(comp => comp.name.toLowerCase() === partName.toLowerCase())) {
         alert("Bu parça zaten envanterinizde mevcut!");
         return;
@@ -159,19 +159,25 @@ document.getElementById('addCustomPartBtn').addEventListener('click', () => {
 
     const newComponent = { name: partName, category: "Özel Parça", level: partLevel };
 
-    // 1. Local Storage'a kaydet
     const customParts = getCustomComponents();
     customParts.push(newComponent);
     localStorage.setItem('pubu_custom_components', JSON.stringify(customParts));
 
-    // 2. Anlık veritabanına ekle
     database.push(newComponent);
 
-    // 3. Arayüzü güncelle
     buildInventoryUI();
     updatePoolInfo();
 
-    // 4. Görsel geri bildirim ve input temizleme
+    // Formdan eklenen parçanın envanter listesindeki karşılığını kısaca vurgula ve göster
+    const grid = document.getElementById('inventoryGrid');
+    const addedLabel = Array.from(grid.querySelectorAll('.inv-checkbox'))
+        .find(cb => cb.value === partName)?.closest('.checkbox-label');
+    if (addedLabel) {
+        addedLabel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        addedLabel.classList.add('newly-added');
+        setTimeout(() => addedLabel.classList.remove('newly-added'), 1600);
+    }
+
     nameInput.value = '';
     const btn = document.getElementById('addCustomPartBtn');
     const originalText = btn.innerHTML;
@@ -179,7 +185,7 @@ document.getElementById('addCustomPartBtn').addEventListener('click', () => {
     
     btn.innerHTML = '✅ Eklendi!';
     btn.style.background = 'var(--accent-cyan)';
-    btn.style.color = '#0d1117'; // Yazı rengini okunabilir yap
+    btn.style.color = '#05070a'; 
     
     setTimeout(() => {
         btn.innerHTML = originalText;
@@ -189,7 +195,7 @@ document.getElementById('addCustomPartBtn').addEventListener('click', () => {
 });
 
 /* =========================================
-   GÖREV ÜRETİMİ (BUG FİX UYGULANDI)
+   GÖREV ÜRETİMİ
 ========================================= */
 function generateChallenge() {
     if (database.length === 0) return;
@@ -200,7 +206,6 @@ function generateChallenge() {
 
     const checkedNames = Array.from(document.querySelectorAll('.inv-checkbox:checked')).map(cb => cb.value);
     
-    // Kullanıcının sahip olduğu/işaretlediği ve seviyeye uygun parçalar
     const ownedPool = levelPool.filter(c => checkedNames.includes(c.name));
 
     const requestedCount = parseInt(compSlider.value, 10);
@@ -212,12 +217,9 @@ function generateChallenge() {
         return;
     }
 
-    // Ana görev için işaretli parçalar arasından seçim yap
     const shuffledOwned = [...ownedPool].sort(() => 0.5 - Math.random());
     const selectedComps = shuffledOwned.slice(0, count);
 
-    // DÜZELTİLDİ: Ekstra parça seçiminde envanterdeki "işaretleme" durumuna bakmaksızın, 
-    // seçilen parçalar (selectedComps) haricindeki tüm level havuzundan (levelPool) seçim yapar.
     const remainingPoolForExtra = levelPool.filter(c => !selectedComps.some(sc => sc.name === c.name));
     
     const extraCount = Math.min(2, remainingPoolForExtra.length);
@@ -225,8 +227,16 @@ function generateChallenge() {
 
     document.getElementById('selectedMCU').textContent = finalMCU;
     const badge = document.getElementById('diffBadge');
-    badge.textContent = `Zorluk: ${finalDiffObj.id} (Seviye ${finalDiffObj.level})`;
-    badge.className = `badge difficulty-${finalDiffObj.id.toLowerCase()}`;
+    const diffSlug = finalDiffObj.id.toLowerCase();
+    const meterBars = Array.from({ length: 6 }, (_, i) =>
+        `<span class="${i < finalDiffObj.level ? 'lit' : ''}"></span>`
+    ).join('');
+    badge.innerHTML = `Zorluk: ${finalDiffObj.id} (Seviye ${finalDiffObj.level}) <span class="level-meter">${meterBars}</span>`;
+    badge.className = `badge difficulty-${diffSlug}`;
+
+    // Sonuç kartının parlama rengini seçilen zorluğa göre eşitle
+    resultArea.className = resultArea.className.replace(/\bdiff-\S+/g, '').trim();
+    resultArea.classList.add(`diff-${diffSlug}`);
 
     componentsList.innerHTML = '';
     selectedComps.forEach((comp, index) => {
@@ -270,9 +280,19 @@ function generateChallenge() {
     resetTimer(); 
 }
 
+const signalPulse = document.getElementById('signalPulse');
+
 generateBtn.addEventListener('click', () => {
     generateBtn.disabled = true;
     generateBtn.style.opacity = '0.7';
+
+    if (signalPulse) {
+        signalPulse.classList.remove('active');
+        // reflow ile animasyonu her tıklamada yeniden başlat
+        void signalPulse.offsetWidth;
+        signalPulse.classList.add('active');
+    }
+
     simulateLoading(() => {
         generateChallenge();
         generateBtn.disabled = false;
@@ -356,7 +376,7 @@ function resetTimer() {
 document.getElementById('resetTimerBtn').addEventListener('click', resetTimer);
 
 /* =========================================
-   EMAILJS & GÜVENLİK (HONEYPOT) & ANİMASYON
+   EMAILJS & GÜVENLİK (HONEYPOT)
 ========================================= */
 document.getElementById('pubu-contact-form').addEventListener('submit', function(e) {
     e.preventDefault(); 
@@ -450,13 +470,37 @@ function renderFavorites() {
         const levelTxt = fav.diffLevel ? ` · Sv.${fav.diffLevel}` : '';
         
         card.innerHTML = `
-            <button class="btn-delete-fav" onclick="deleteFav('${fav.id}')">Sil</button>
-            <span class="fav-diff difficulty-${fav.diffId.toLowerCase()}" style="border:1px solid currentColor; color:currentColor;">${fav.diffId}${levelTxt}</span>
-            <span style="color:var(--text-sub); font-size:0.75rem; margin-left:10px;">${fav.date}</span>
+            <div class="fav-card-top">
+                <div class="fav-card-meta">
+                    <span class="fav-diff difficulty-${fav.diffId.toLowerCase()}" style="border:1px solid currentColor; color:currentColor;">${fav.diffId}${levelTxt}</span>
+                    <span class="fav-date">${fav.date}</span>
+                </div>
+                <button class="btn-delete-fav" onclick="deleteFav('${fav.id}')">Sil</button>
+            </div>
             <h4>🧠 ${fav.mcu}</h4>
             <p><strong>Bileşenler:</strong> ${fav.components.join(', ')}</p>
         `;
         favList.appendChild(card);
+    });
+}
+
+/* =========================================
+   YENİ EKLENEN: DOĞU TÜRKİSTAN LİNK AĞACI (TOGLE MANTIĞI)
+========================================= */
+const eastTurkestanBtn = document.getElementById('eastTurkestanBtn');
+const eastTurkestanMenu = document.getElementById('eastTurkestanMenu');
+
+if (eastTurkestanBtn && eastTurkestanMenu) {
+    eastTurkestanBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        eastTurkestanMenu.classList.toggle('show');
+    });
+
+    // Menü dışına tıklandığında menüyü kapat
+    document.addEventListener('click', (e) => {
+        if (!eastTurkestanBtn.contains(e.target) && !eastTurkestanMenu.contains(e.target)) {
+            eastTurkestanMenu.classList.remove('show');
+        }
     });
 }
 

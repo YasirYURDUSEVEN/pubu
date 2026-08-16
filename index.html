@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>pubu — Maker Challenge Generator</title>
     <!-- Modern fontlar -->
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     
     <!-- EmailJS Kütüphanesi -->
@@ -24,7 +24,7 @@
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "y2turhm5fz");
-</script>
+    </script>
 </head>
 
 <body>
@@ -34,29 +34,34 @@
 
 <div class="container">
     <header class="fade-in">
-        <!-- YENİLENEN LOGO VE BAŞLIK ALANI -->
-        <div class="hero-title" style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 12px;">
-            <img src="pubu.svg" alt="PUBU Logo" style="width: 55px; height: 55px; filter: drop-shadow(0 0 12px rgba(255, 140, 0, 0.4));">
-            <h1 style="color: #FF8C00; margin: -5; font-size: clamp(3rem, 6vw, 4rem); letter-spacing: -1.5px; line-height: 1;">pubu</h1>
+        <div class="hero-title">
+            <img src="pubu.svg" alt="PUBU Logo" class="hero-logo">
+            <h1 class="hero-word">pubu</h1>
+            <span class="power-led" aria-hidden="true"></span>
         </div>
-        <p class="desc" style="color: #ff8c00da;">Maker Challenge Generator</p>
+        <p class="desc desc-accent">Maker Challenge Generator</p>
         <p class="desc">Bileşenlerini seç, zorluğunu belirle ve sınırları zorlayan projeni kurgula!</p>
     </header>
 
     <div class="controls fade-in delay-1">
+        <span class="signal-pulse" id="signalPulse" aria-hidden="true"></span>
+
         <!-- Envanter Seçim Alanı -->
         <div class="inventory-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <label class="section-title" style="margin: 0;">📦 ELİMDEKİ PARÇALAR (ENVANTER)</label>
+            <div class="inventory-header">
+                <label class="section-title inventory-title">📦 Elimdeki Parçalar (Envanter)</label>
                 <button id="toggleInventoryBtn" class="btn-text">Tümünü Kaldır</button>
             </div>
             <div class="inventory-grid" id="inventoryGrid"></div>
-            <!-- Özel Parça Ekleme Alanı -->
-            <div class="custom-part-section" style="background: rgba(255, 255, 255, 0.02); padding: 16px; border-radius: 12px; border: 1px solid var(--surface-border); margin-bottom: 20px;">
-                <div class="section-title" style="margin: 0 0 12px 0;">➕ KENDİ PARÇANI EKLE</div>
-                <div class="custom-part-form" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    <input type="text" id="customPartName" placeholder="Parça Adı (Örn: Lazer Sensör)" style="flex: 2; min-width: 150px;">
-                    <select id="customPartLevel" style="flex: 1; min-width: 100px; padding: 12px 16px;">
+
+            <div class="custom-part-section">
+                <div class="custom-part-divider">
+                    <span class="custom-part-arrow">↳</span>
+                    <span>Listede yok mu? Envanterine kendi parçanı ekle</span>
+                </div>
+                <div class="custom-part-form">
+                    <input type="text" id="customPartName" placeholder="Parça adı (Örn: Lazer Sensör)">
+                    <select id="customPartLevel">
                         <option value="1">Seviye 1</option>
                         <option value="2">Seviye 2</option>
                         <option value="3">Seviye 3</option>
@@ -64,7 +69,7 @@
                         <option value="5">Seviye 5</option>
                         <option value="6">Seviye 6</option>
                     </select>
-                    <button id="addCustomPartBtn" class="btn-submit" style="flex: 1; padding: 12px; min-width: 120px; font-size: 0.9rem; justify-content:center;">Ekle</button>
+                    <button id="addCustomPartBtn" class="btn-add-part">➕ Envantere Ekle</button>
                 </div>
             </div>
             <!-- Özel Parça Alanı Sonu -->
@@ -108,7 +113,7 @@
         <div class="components-grid" id="componentsList"></div>
 
         <div id="extraPartsContainer" class="hidden">
-            <div class="section-title" style="color: var(--accent-cyan);">💡 ÖNERİLEN EKSTRA PARÇALAR (PROJEYİ UÇURMAK İÇİN)</div>
+            <div class="section-title section-title-cyan">💡 ÖNERİLEN EKSTRA PARÇALAR (PROJEYİ UÇURMAK İÇİN)</div>
             <div class="components-grid" id="extraComponentsList"></div>
         </div>
 
@@ -139,12 +144,38 @@
     </div>
 
     <!-- Topluluğa Katıl Alanı -->
-    <div class="community-section fade-in mt-4" style="text-align: center; background: rgba(255, 255, 255, 0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--surface-border); margin-bottom: 20px;">
-        <div class="section-title" style="margin-bottom: 8px;">🚀 TOPLULUĞUMUZA KATIL</div>
-        <p style="color: var(--text-sub); font-size: 0.9rem; margin-bottom: 16px;">Projelerini paylaş, yeni fikirler keşfet ve maker topluluğumuzun bir parçası ol!</p>
-        <a href="https://www.instagram.com/pubu_makerchallenge?igsh=MWE4eGhuM29yMzcybg==" target="_blank" class="btn-community">
+    <div class="community-section fade-in mt-4">
+        <div class="section-title section-title-strong">🚀 TOPLULUĞUMUZA KATIL</div>
+        <p class="community-desc">Projelerini paylaş, yeni fikirler keşfet ve maker topluluğumuzun bir parçası ol!</p>
+
+        <a href="https://www.instagram.com/pubu_makerchallenge?igsh=MWE4eGhuM29yMzcybg==" target="_blank" class="btn-community community-cta">
             📷 Instagram'da Bize Katıl
         </a>
+
+        <!-- YENİ EKLENEN DAYANIŞMA BUTONLARI -->
+        <div class="solidarity-block">
+            <div class="section-title section-title-strong">🌍 BİRLİKTE DAHA GÜÇLÜYÜZ</div>
+            <div class="solidarity-buttons">
+                
+                <!-- Doğu Türkistan Link Ağacı Butonu -->
+                <div class="dropdown-container">
+                    <button id="eastTurkestanBtn" class="btn-solidarity btn-east-turkestan">
+                        🇹🇷 Doğu Türkistan
+                    </button>
+                    <div id="eastTurkestanMenu" class="dropdown-menu">
+                        <a href="https://tr.wikipedia.org/wiki/Do%C4%9Fu_T%C3%BCrkistan" target="_blank">📚 Doğu Türkistan Tarihi</a>
+                        <a href="https://tr.wikipedia.org/wiki/Uygur_Soyk%C4%B1r%C4%B1m%C4%B1" target="_blank">⚠️ Soykırım Bilgilendirme</a>
+                        <a href="https://ihh.org.tr/bagis/doguturkistan" target="_blank">🤲 Vakıf / Yardım Bağlantısı</a>
+                    </div>
+                </div>
+
+                <!-- Filistin Butonu -->
+                <a href="https://ihh.org.tr/bagis/filistin-gazze" target="_blank" class="btn-solidarity btn-palestine">
+                    🇵🇸 Filistin'e Destek
+                </a>
+            </div>
+        </div>
+
     </div>
 
     <!-- İletişim Formu ve Honeypot Alanı -->
