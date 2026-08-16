@@ -29,6 +29,9 @@
 
 <body>
 
+<!-- Bildirim (Toast) Alanı -->
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
 <!-- Sağ Üst Favoriler Butonu -->
 <button id="viewFavsBtn" class="top-right-btn">⭐ Favorilerim</button>
 
@@ -42,6 +45,20 @@
         <p class="desc desc-accent">Maker Challenge Generator</p>
         <p class="desc">Bileşenlerini seç, zorluğunu belirle ve sınırları zorlayan projeni kurgula!</p>
     </header>
+
+    <!-- Seviye / XP Paneli -->
+    <div class="xp-panel fade-in delay-1" id="xpPanel">
+        <div class="xp-level-icon" id="xpLevelIcon">🔌</div>
+        <div class="xp-info">
+            <div class="xp-level-row">
+                <span class="xp-level-name" id="xpLevelName">Devre Çırağı</span>
+                <span class="xp-total" id="xpTotalText">0 XP</span>
+            </div>
+            <div class="xp-bar-track"><div class="xp-bar-fill" id="xpBarFill"></div></div>
+            <div class="xp-next-text" id="xpNextText">Sıradaki seviyeye 100 XP kaldı</div>
+        </div>
+        <button class="btn-badges" id="openBadgesBtn" type="button" title="Rozetlerim" aria-label="Rozetlerim">🏅</button>
+    </div>
 
     <div class="controls fade-in delay-1">
         <span class="signal-pulse" id="signalPulse" aria-hidden="true"></span>
@@ -120,6 +137,10 @@
         <div class="challenge-prompt" id="promptText">
             Proje konsepti yükleniyor...
         </div>
+        <div id="wiringGuideContainer" class="hidden">
+    <div class="section-title section-title-orange">🔌 BAĞLANTI REHBERİ (PINOUT & WIRING)</div>
+    <div id="wiringGuideContent"></div>
+</div>
         
         <!-- Zamanlayıcı -->
         <div class="timer-section mt-4">
@@ -138,8 +159,11 @@
         </div>
 
         <div class="actions mt-4">
-            <button class="btn-fav" id="addFavBtn">⭐ Favorilere Ekle</button>
-            <button class="btn-copy" id="copyBtn">📋 Kopyala</button>
+            <button class="btn-complete" id="completeChallengeBtn">✅ Görevi Tamamla <span class="xp-chip" id="completeXpChip">+XP</span></button>
+            <div class="actions-row">
+                <button class="btn-fav" id="addFavBtn">⭐ Favorilere Ekle</button>
+                <button class="btn-copy" id="copyBtn">📋 Kopyala</button>
+            </div>
         </div>
     </div>
 
@@ -165,7 +189,7 @@
                     <div id="eastTurkestanMenu" class="dropdown-menu">
                         <a href="https://tr.wikipedia.org/wiki/Do%C4%9Fu_T%C3%BCrkistan" target="_blank">📚 Doğu Türkistan Tarihi</a>
                         <a href="https://tr.wikipedia.org/wiki/Uygur_Soyk%C4%B1r%C4%B1m%C4%B1" target="_blank">⚠️ Soykırım Bilgilendirme</a>
-                        <a href="https://ihh.org.tr/bagis/doguturkistan" target="_blank">🇹🇷🇺🇿🇰🇿🇹🇲🇰🇬🇦🇿 Destek</a>
+                        <a href="https://ihh.org.tr/bagis/doguturkistan" target="_blank">🤲 Vakıf / Yardım Bağlantısı</a>
                     </div>
                 </div>
 
@@ -213,6 +237,17 @@
             <button id="closeFavsBtn" class="close-btn">✖</button>
         </div>
         <div class="fav-list" id="favList"></div>
+    </div>
+</div>
+
+<!-- Rozetler Modalı -->
+<div class="modal-overlay hidden" id="badgesModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>🏅 Rozetlerim</h2>
+            <button id="closeBadgesBtn" class="close-btn">✖</button>
+        </div>
+        <div class="badges-grid" id="badgesGrid"></div>
     </div>
 </div>
 
